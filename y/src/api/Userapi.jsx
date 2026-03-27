@@ -14,7 +14,7 @@ export const UserApislice = createApi({
   endpoints: (builder) => ({
     registerPost: builder.mutation({
       query: (formData) => ({
-        url: "http://localhost:3000/register",
+        url: "/register",
         method: "POST",
         body: formData,
       }),

@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { useFormik } from "formik";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRegisterPostMutation } from "../api/Userapi";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [registerUser] = useRegisterPostMutation();
+      const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -58,10 +60,13 @@ const Register = () => {
         console.log("Form Data being sent:", formData);
         
         const response = await registerUser(formData).unwrap();
+
+    
         
         console.log("Registration response:", response);
         alert("Registration Successful ✅");
         resetForm();
+        navigate("/otp");
         
       } catch (error) {
         console.error("Registration failed:", error);
