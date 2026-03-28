@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRegisterPostMutation } from "../api/Userapi";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Register = () => {
   const [registerUser] = useRegisterPostMutation();
@@ -64,15 +65,21 @@ const Register = () => {
     
         
         console.log("Registration response:", response);
-        alert("Registration Successful ✅");
+        toast.success("Registration Successful 🎉");
         resetForm();
-        navigate("/otp");
+       localStorage.setItem("userEmail", formData.email);
+       navigate("/otp");
         
       } catch (error) {
-        console.error("Registration failed:", error);
-        console.error("Error details:", error.data || error.message);
-        alert(`Registration failed: ${error.data?.message || "Please try again."}`);
-      } finally {
+  console.log("FULL ERROR:", error);
+
+  const message =
+    error?.data?.message ||   // backend error
+    error?.error ||           // network error
+    "Registration failed";
+
+  toast.error(message);
+} finally {
         setSubmitting(false);
       }
     }

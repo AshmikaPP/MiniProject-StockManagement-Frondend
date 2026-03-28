@@ -19,7 +19,21 @@ export const UserApislice = createApi({
         body: formData,
       }),
     }),
+    verifyOtp : builder.mutation({
+      query : (otpData) =>({
+        url:'/verify-otp',
+        method :'POST',
+        body:otpData
+      }),
+    }),
+    resendOtp:builder.mutation({
+      query:(emailData)=>({
+        url:'/resend-otp',
+        method: 'POST',
+        body:emailData
+      })
+    })
   }),
 });
 
-export const { useRegisterPostMutation } = UserApislice;
+export const { useRegisterPostMutation,useVerifyOtpMutation ,useResendOtpMutation} = UserApislice;

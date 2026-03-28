@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
+import { useResendOtpMutation, useVerifyOtpMutation } from "../api/Userapi";
+import { toast } from "react-toastify";
 
 const OtpVerify = () => {
 
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(60);
   const [expired, setExpired] = useState(false);
-
+  const navigate = useNavigate()
+  const [verifyOtp] = useVerifyOtpMutation();
+  const [resendOtp] = useResendOtpMutation()
+  
   // ⏱ TIMER LOGIC (60 → 0)
   useEffect(() => {
     if (timer === 0) {
@@ -22,26 +28,49 @@ const OtpVerify = () => {
     return () => clearInterval(interval);
   }, [timer]);
 
-  const handleVerify = () => {
-    if (expired) {
-      alert("OTP expired. Please resend.");
-      return;
-    }
+  const handleVerify = async () => {
+    try {
+      if (expired) {
+        alert("OTP expired. Please resend.");
+        return;
+      }
 
-    if (otp.length !== 4) {
-      alert("Enter valid OTP");
-      return;
-    }
+      if (otp.length !== 4) {
+        alert("Enter valid OTP");
+        return;
+      }
 
-    // 🔥 call backend verify API here later
-    alert("OTP Verified Successfully 🎉");
+      const email = localStorage.getItem("userEmail");
+
+      const res = await verifyOtp({ email, otp }).unwrap();
+
+       toast.success(res.message);
+
+      // 🚀 GO TO DASHBOARD
+      navigate("/dashboard");
+
+    } catch (err) {
+      toast.error(err?.data?.message || "Verification failed");
+    }
   };
 
-  const handleResend = () => {
+   
+  const handleResend = async () => {
+  try {
+    const email = localStorage.getItem("userEmail");
+
+    const res = await resendOtp({ email }).unwrap();
+
+     toast.success(res.message);
+
+    // restart timer
     setTimer(60);
     setExpired(false);
-    alert("New OTP Sent 📩");
-  };
+
+  } catch (err) {
+     toast.error(err?.data?.message || "Failed to resend OTP");
+  }
+};
 
   return (
     <div
@@ -102,17 +131,23 @@ const OtpVerify = () => {
         </motion.button>
 
         {/* RESEND */}
-        {expired && (
-          <p className="mt-3">
-            Didn't receive OTP?{" "}
-            <span
-              style={{ color: "#ff6b6b", cursor: "pointer", fontWeight: "600" }}
-              onClick={handleResend}
-            >
-              Resend OTP
-            </span>
-          </p>
-        )}
+        <p className="mt-3">
+  Didn't receive OTP?{" "}
+  <button
+    onClick={handleResend}
+    disabled={!expired}
+    style={{
+      background: "none",
+      border: "none",
+      color: expired ? "#ff6b6b" : "gray",
+      fontWeight: "600",
+      cursor: expired ? "pointer" : "not-allowed",
+      textDecoration: "underline"
+    }}
+  >
+    {expired ? "Resend OTP" : `Resend in 00:${timer}`}
+  </button>
+</p>
       </motion.div>
     </div>
   );
